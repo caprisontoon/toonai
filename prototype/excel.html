@@ -3,14 +3,13 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>TOONAI · 크루 엑셀 후원 프로토타입</title>
+<title>TOONAI · 시그니처 후원 (WHO + SIGNATURE)</title>
 <style>
   :root{
     --brand-700:#6D28D9; --brand-500:#8B5CF6; --brand-300:#C4B5FD;
     --accent:#F472B6; --bg:#0F0B1E; --surface:#1B1430; --surface-2:#272042;
     --text:#F5F3FF; --text-dim:#A99FD0; --line:#332a52;
-    --gold:#FBBF24; --silver:#CBD5E1; --bronze:#D97706;
-    --up:#34D399; --down:#F87171; --danger:#EF4444;
+    --special:#8B5CF6; --legend:#FBBF24; --hot:#F472B6; --ai:#34D399;
     --font:"Pretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -25,7 +24,7 @@
   }
   button{font-family:var(--font)}
   .stage{display:flex; flex-direction:column; align-items:center; gap:14px}
-  .tagline{color:var(--text-dim); font-size:13px; text-align:center; line-height:1.5}
+  .tagline{color:var(--text-dim); font-size:13px; text-align:center; line-height:1.55; max-width:380px}
   .tagline b{color:var(--brand-300)}
   .phone{
     position:relative; width:390px; height:min(844px,90vh);
@@ -35,218 +34,182 @@
   }
   .notch{position:absolute; top:0; left:50%; transform:translateX(-50%); width:150px; height:30px;
     background:#16111f; border-radius:0 0 18px 18px; z-index:80}
-  /* ---------- 헤더 ---------- */
-  header{
-    flex:0 0 auto; padding:44px 14px 10px; display:flex; align-items:center; gap:10px;
+  /* 헤더 */
+  header{flex:0 0 auto; padding:44px 14px 10px; display:flex; align-items:center; gap:10px;
     background:linear-gradient(180deg, rgba(109,40,217,.30), rgba(109,40,217,0));
-    border-bottom:1px solid var(--line); z-index:20;
-  }
+    border-bottom:1px solid var(--line); z-index:20}
   .iconbtn{appearance:none; border:0; background:rgba(255,255,255,.06); color:var(--text);
     width:34px; height:34px; border-radius:50%; font-size:16px; cursor:pointer}
   .h-title{flex:1; min-width:0}
   .h-title .t1{font-weight:800; font-size:15px}
   .h-title .t2{font-size:11px; color:var(--text-dim); margin-top:1px}
-  .roundbadge{font-size:12px; font-weight:800; color:#fff; padding:6px 11px; border-radius:999px;
-    background:linear-gradient(135deg,var(--brand-500),var(--accent))}
-  /* ---------- 라이브 스탯 스트립 ---------- */
-  .stats{flex:0 0 auto; display:flex; gap:8px; padding:9px 12px; border-bottom:1px solid var(--line)}
-  .stat{flex:1; display:flex; align-items:center; justify-content:center; gap:4px;
-    background:var(--surface); border:1px solid var(--line); border-radius:999px;
-    font-size:12px; font-weight:700; padding:7px 4px; font-variant-numeric:tabular-nums; white-space:nowrap}
-  .stat.timer{color:var(--brand-300); border-color:rgba(139,92,246,.5)}
-  .stat.timer.urgent{color:#fff; background:rgba(239,68,68,.18); border-color:var(--danger);
-    animation:tpulse 1s ease-in-out infinite}
-  @keyframes tpulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.45)} 50%{box-shadow:0 0 0 6px rgba(239,68,68,0)}}
-  .stat .dim{color:var(--text-dim); font-weight:600}
-  /* ---------- 순위판 (엑셀 그리드) ---------- */
-  .gridhead{flex:0 0 auto; display:grid; grid-template-columns:44px 36px 1fr 110px 38px;
-    padding:8px 14px 6px; font-size:10.5px; font-weight:700; letter-spacing:.6px; color:var(--text-dim)}
-  .gridhead .r{text-align:right} .gridhead .c{text-align:center}
-  .board{flex:1 1 auto; overflow-y:auto; padding:0 8px 8px}
-  .board::-webkit-scrollbar{width:0}
-  .rrow{
-    display:grid; grid-template-columns:44px 36px 1fr 110px 38px; align-items:center;
-    height:56px; padding:0 6px; margin:0 0 4px; border-radius:14px; cursor:pointer;
-    background:var(--surface); border:1px solid var(--line); position:relative; transition:background .15s;
-  }
-  .rrow:nth-child(even){background:#1e1736}
-  .rrow:active{background:#2a2148}
-  .rrow .rk{font-size:14px; font-weight:800; text-align:center; color:var(--text-dim)}
-  .rrow .rk .medal{font-size:19px}
-  .rrow .avt{font-size:21px; text-align:center}
-  .rrow .nm{font-weight:700; font-size:14px; min-width:0; line-height:1.25}
-  .rrow .nm .sub{display:block; font-size:10.5px; font-weight:600; color:var(--text-dim)}
-  .rrow .amt{font-weight:800; font-size:14px; text-align:right; font-variant-numeric:tabular-nums}
-  .rrow .dlt{font-size:11px; font-weight:800; text-align:center; color:var(--text-dim)}
-  .rrow .dlt.up{color:var(--up)} .rrow .dlt.down{color:var(--down)}
-  .rrow.r1{border-color:rgba(251,191,36,.55); box-shadow:inset 3px 0 0 var(--gold)}
-  .rrow.r1 .amt{color:var(--gold)}
-  .rrow.mine{border-color:rgba(139,92,246,.7); box-shadow:inset 3px 0 0 var(--brand-500), 0 0 14px rgba(139,92,246,.18)}
-  .rrow.mine.r1{box-shadow:inset 3px 0 0 var(--gold), 0 0 16px rgba(251,191,36,.25)}
-  .rrow.mine .nm .sub b{color:var(--brand-300)}
-  .rrow.bump{animation:bump .65s ease-out}
-  @keyframes bump{0%{background:rgba(52,211,153,.20)} 100%{background:transparent}}
-  /* ---------- 내 픽 바 ---------- */
-  .pickbar{flex:0 0 auto; padding:10px 14px 14px; border-top:1px solid var(--line);
-    background:rgba(20,14,38,.92); backdrop-filter:blur(8px); z-index:20}
-  .pb-row1{display:flex; justify-content:space-between; align-items:baseline; gap:8px; font-size:12.5px}
-  .pb-row1 .pk{color:var(--text-dim)} .pb-row1 .pk b{color:var(--text)}
-  .pb-row1 .gap{font-weight:800; color:var(--brand-300); font-variant-numeric:tabular-nums}
-  .gauge{height:7px; border-radius:999px; background:var(--surface-2); margin:8px 0 6px; overflow:hidden}
-  .gauge i{display:block; height:100%; width:0%; border-radius:999px;
-    background:linear-gradient(90deg,var(--brand-500),var(--accent)); transition:width .5s cubic-bezier(.2,.8,.2,1)}
-  .pb-contrib{font-size:11px; color:var(--text-dim); margin-bottom:7px; font-variant-numeric:tabular-nums}
-  .pb-contrib b{color:var(--brand-300)}
-  .pb-chips{display:flex; gap:7px}
-  .pchip{flex:1; appearance:none; cursor:pointer; border:1px solid rgba(196,181,253,.4); background:var(--surface-2);
-    color:var(--text); font-size:12.5px; font-weight:800; padding:11px 2px; border-radius:12px; white-space:nowrap;
-    font-variant-numeric:tabular-nums; transition:.12s}
-  .pchip:active{transform:scale(.96)}
-  .pchip.rev{flex:1.6; border:0; color:#fff;
-    background:linear-gradient(135deg,var(--brand-500),var(--accent));
-    box-shadow:0 6px 16px rgba(139,92,246,.45)}
-  .pchip.edit{flex:.55}
-  .pb-note{font-size:10px; color:var(--text-dim); text-align:center; margin-top:7px}
-  /* ---------- 토스트 (투니) ---------- */
-  .toastwrap{position:absolute; left:12px; right:12px; bottom:172px; z-index:60; display:flex; flex-direction:column; gap:8px; pointer-events:none}
-  .toast{display:flex; align-items:center; gap:9px; background:#241b44; border:1px solid var(--line);
-    border-radius:14px; padding:10px 12px; font-size:12.5px; line-height:1.45;
-    box-shadow:0 12px 30px rgba(0,0,0,.5); animation:rise .25s ease-out; pointer-events:auto}
-  .toast .tavt{flex:0 0 auto; width:26px; height:26px; border-radius:50%; display:grid; place-items:center; font-size:14px;
-    background:linear-gradient(135deg,var(--brand-500),var(--accent))}
-  .toast .body{flex:1; min-width:0} .toast b{color:var(--brand-300)}
-  .toast.alert{border-color:rgba(248,113,113,.55)} .toast.alert b{color:#FCA5A5}
-  .toast .act{flex:0 0 auto; appearance:none; border:0; cursor:pointer; color:#fff; font-weight:800; font-size:11.5px;
-    padding:8px 10px; border-radius:10px; background:linear-gradient(135deg,var(--brand-500),var(--accent)); white-space:nowrap}
-  @keyframes rise{from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none}}
-  /* ---------- 바텀시트 ---------- */
-  .dim{position:absolute; inset:0; background:rgba(5,3,12,.6); z-index:40; opacity:0; transition:opacity .25s}
+  /* ① 출연자 라인업 (WHO) */
+  .who{flex:0 0 auto; padding:11px 0 12px; border-bottom:1px solid var(--line); background:rgba(20,14,38,.6)}
+  .who .lbl{font-size:11px; color:var(--text-dim); font-weight:700; padding:0 16px 9px; letter-spacing:.3px}
+  .who .lbl b{color:var(--brand-300)}
+  .strip{display:flex; gap:14px; overflow-x:auto; padding:0 16px 4px; scrollbar-width:none}
+  .strip::-webkit-scrollbar{display:none}
+  .persona{flex:0 0 auto; width:62px; text-align:center; cursor:pointer}
+  .persona .ring{width:58px; height:58px; margin:0 auto 5px; border-radius:50%; display:grid; place-items:center;
+    font-size:30px; background:var(--surface-2); border:2px solid transparent; transition:.16s}
+  .persona:active .ring{transform:scale(.94)}
+  .persona .pn{font-size:11.5px; color:var(--text-dim); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .persona.sel .ring{border-color:var(--brand-500); background:rgba(139,92,246,.18);
+    box-shadow:0 0 0 3px rgba(139,92,246,.22), 0 6px 16px rgba(139,92,246,.35)}
+  .persona.sel .pn{color:var(--text); font-weight:800}
+  .persona.hint .ring{animation:pp 1.6s ease-in-out infinite}
+  @keyframes pp{0%,100%{transform:scale(1)} 50%{transform:scale(1.06)}}
+  /* ② 시그니처 영역 (WHICH) */
+  .body{flex:1 1 auto; overflow-y:auto; padding:14px 14px 18px}
+  .body::-webkit-scrollbar{width:0}
+  .empty{height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; color:var(--text-dim); gap:10px; padding-bottom:40px}
+  .empty .big{font-size:40px} .empty .e1{font-size:15px; font-weight:700; color:var(--text)} .empty .e2{font-size:12.5px}
+  .sectitle{font-size:14px; font-weight:800; margin:2px 2px 12px; display:flex; align-items:center; gap:7px}
+  .sectitle .em{font-size:18px}
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+  .sig{position:relative; cursor:pointer; background:var(--surface); border:1px solid var(--line);
+    border-radius:16px; padding:14px 12px 12px; text-align:center; overflow:hidden; transition:transform .12s, border-color .16s}
+  .sig:active{transform:scale(.97)}
+  .sig .sem{font-size:34px; line-height:1; margin-bottom:8px; display:block; filter:drop-shadow(0 4px 10px rgba(0,0,0,.4))}
+  .sig .snm{font-size:14px; font-weight:800; margin-bottom:3px}
+  .sig .sfx{font-size:11px; color:var(--text-dim); line-height:1.35; min-height:30px}
+  .sig .samt{margin-top:9px; font-size:15px; font-weight:800; font-variant-numeric:tabular-nums}
+  /* 티어 */
+  .sig.special{border-color:rgba(139,92,246,.6); box-shadow:0 0 16px rgba(139,92,246,.12) inset}
+  .sig.special .samt{color:var(--brand-300)}
+  .sig.legend{border-color:rgba(251,191,36,.65)}
+  .sig.legend .samt{color:var(--legend)}
+  .sig.legend::before{content:""; position:absolute; inset:-1px; border-radius:16px; padding:1px; pointer-events:none;
+    background:linear-gradient(120deg, transparent 20%, rgba(251,191,36,.85), transparent 80%);
+    -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor; mask-composite:exclude; background-size:200% 100%; animation:shim 2.6s linear infinite}
+  @keyframes shim{0%{background-position:200% 0} 100%{background-position:-200% 0}}
+  .tier-tag{position:absolute; top:8px; left:8px; font-size:8.5px; font-weight:800; letter-spacing:.6px;
+    padding:3px 6px; border-radius:6px}
+  .tier-tag.special{background:rgba(139,92,246,.22); color:var(--brand-300)}
+  .ribbon{position:absolute; top:8px; left:-26px; transform:rotate(-45deg); width:96px; text-align:center;
+    font-size:8.5px; font-weight:900; letter-spacing:.5px; color:#1a1206; padding:3px 0;
+    background:linear-gradient(135deg,#FCD34D,var(--legend)); box-shadow:0 2px 6px rgba(0,0,0,.4)}
+  .badge{position:absolute; top:8px; right:8px; font-size:9px; font-weight:800; padding:3px 7px; border-radius:999px; color:#fff}
+  .badge.hot{background:linear-gradient(135deg,var(--hot),var(--brand-500))}
+  .badge.ai{background:linear-gradient(135deg,var(--ai),#10b981); color:#06281c}
+  .customcard{grid-column:1 / -1; cursor:pointer; border:1.5px dashed var(--line); background:transparent;
+    border-radius:14px; padding:13px; text-align:center; color:var(--text-dim); font-size:13px; font-weight:700}
+  .customcard:active{transform:scale(.99)}
+  /* 확인 시트 */
+  .dim{position:absolute; inset:0; background:rgba(5,3,12,.62); z-index:40; opacity:0; transition:opacity .25s}
   .dim.on{opacity:1}
   .sheet{position:absolute; left:0; right:0; bottom:0; z-index:50; background:#1d1538;
     border-radius:24px 24px 0 0; border-top:1px solid var(--line); padding:10px 16px 18px;
-    transform:translateY(105%); transition:transform .3s cubic-bezier(.2,.8,.2,1); box-shadow:0 -18px 50px rgba(0,0,0,.5)}
+    transform:translateY(106%); transition:transform .3s cubic-bezier(.2,.8,.2,1); box-shadow:0 -18px 50px rgba(0,0,0,.5)}
   .sheet.on{transform:none}
-  .grab{width:42px; height:4px; border-radius:999px; background:var(--surface-2); margin:2px auto 12px}
-  .s-head{display:flex; align-items:center; gap:10px; margin-bottom:12px}
-  .s-avt{width:42px; height:42px; border-radius:50%; background:var(--surface-2); display:grid; place-items:center; font-size:23px}
-  .s-info{flex:1; min-width:0}
-  .s-name{font-weight:800; font-size:15px}
-  .s-sub{font-size:11.5px; color:var(--text-dim); margin-top:1px; font-variant-numeric:tabular-nums}
-  .s-pickbtn{appearance:none; cursor:pointer; border:1px solid rgba(196,181,253,.4); background:transparent;
-    color:var(--brand-300); font-size:11px; font-weight:700; padding:7px 10px; border-radius:999px}
-  .s-mypick{font-size:11px; font-weight:800; color:var(--brand-300)}
-  .s-amts{display:flex; flex-wrap:wrap; gap:7px; margin-bottom:9px}
-  .schip{appearance:none; cursor:pointer; border:1px solid var(--line); background:var(--surface-2); color:var(--text);
-    font-size:13px; font-weight:800; padding:10px 13px; border-radius:12px; font-variant-numeric:tabular-nums; transition:.12s}
-  .schip.sel{border-color:var(--brand-500); background:rgba(139,92,246,.22); box-shadow:0 0 0 2px rgba(139,92,246,.3)}
-  .schip.rev{border:0; color:#fff; background:linear-gradient(135deg,var(--brand-500),var(--accent))}
-  .schip.rev.sel{box-shadow:0 0 0 2px rgba(244,114,182,.55)}
-  .s-custom{display:flex; gap:7px; margin-bottom:12px}
-  .s-custom input{flex:1; background:var(--surface-2); border:1px solid var(--line); color:var(--text);
-    border-radius:12px; padding:10px 13px; font-size:13.5px; font-family:var(--font); outline:none; font-variant-numeric:tabular-nums}
-  .s-custom input:focus{border-color:var(--brand-300)}
-  .s-custom button{appearance:none; cursor:pointer; border:1px solid var(--line); background:var(--surface-2);
-    color:var(--text); font-weight:700; font-size:12.5px; padding:0 14px; border-radius:12px}
-  .s-label{font-size:11px; color:var(--text-dim); margin-bottom:7px}
-  .s-msgs{display:flex; flex-wrap:wrap; gap:7px; margin-bottom:14px}
+  .grab{width:42px; height:4px; border-radius:999px; background:var(--surface-2); margin:2px auto 14px}
+  .cs-head{display:flex; align-items:center; gap:12px; margin-bottom:14px}
+  .cs-sem{width:54px; height:54px; border-radius:14px; background:var(--surface-2); display:grid; place-items:center; font-size:30px}
+  .cs-info{flex:1; min-width:0}
+  .cs-to{font-size:11.5px; color:var(--text-dim)} .cs-to b{color:var(--brand-300)}
+  .cs-nm{font-size:16px; font-weight:800; margin:1px 0}
+  .cs-fx{font-size:11.5px; color:var(--text-dim)}
+  .cs-amt{font-size:18px; font-weight:900; font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap}
+  .cs-custom{display:none; gap:8px; margin-bottom:12px}
+  .cs-custom.on{display:flex}
+  .cs-custom input{flex:1; background:var(--surface-2); border:1px solid var(--line); color:var(--text);
+    border-radius:12px; padding:11px 14px; font-size:14px; font-family:var(--font); outline:none; font-variant-numeric:tabular-nums}
+  .cs-custom input:focus{border-color:var(--brand-300)}
+  .cs-label{font-size:11px; color:var(--text-dim); margin-bottom:8px}
+  .cs-msgs{display:flex; flex-wrap:wrap; gap:7px; margin-bottom:15px}
   .mchip{appearance:none; cursor:pointer; border:1px solid var(--line); background:var(--surface-2); color:var(--text);
     font-size:12px; font-weight:600; padding:8px 12px; border-radius:999px}
   .mchip.sel{border-color:var(--brand-500); background:rgba(139,92,246,.22)}
-  .s-send{width:100%; appearance:none; border:0; cursor:pointer; color:#fff; font-weight:800; font-size:15px;
-    padding:14px; border-radius:14px; background:linear-gradient(135deg,var(--brand-500),var(--accent));
+  .cs-send{width:100%; appearance:none; border:0; cursor:pointer; color:#fff; font-weight:800; font-size:15px;
+    padding:15px; border-radius:14px; background:linear-gradient(135deg,var(--brand-500),var(--accent));
     box-shadow:0 10px 24px rgba(139,92,246,.45); font-variant-numeric:tabular-nums}
-  .s-send:active{transform:scale(.985)}
-  .s-guard{margin-top:11px; font-size:11px; color:var(--text-dim); text-align:center; font-variant-numeric:tabular-nums}
-  .s-guard u{cursor:pointer; color:var(--brand-300)}
-  .s-guard.warn{color:#FCD34D}
-  /* ---------- 결과 모달 ---------- */
-  .modal{position:absolute; inset:0; z-index:70; display:grid; place-items:center; background:rgba(5,3,12,.72);
-    opacity:0; pointer-events:none; transition:opacity .3s}
-  .modal.on{opacity:1; pointer-events:auto}
-  .m-card{width:84%; background:#1d1538; border:1px solid var(--line); border-radius:22px; padding:24px 20px;
-    text-align:center; box-shadow:0 24px 60px rgba(0,0,0,.6); animation:rise .35s ease-out}
-  .m-trophy{font-size:46px; animation:wig 1.6s ease-in-out infinite}
-  @keyframes wig{0%,100%{transform:rotate(-6deg)} 50%{transform:rotate(6deg)}}
-  .m-card h3{margin:8px 0 4px; font-size:19px}
-  .m-card .m-sub{font-size:12px; color:var(--text-dim); font-variant-numeric:tabular-nums}
-  .m-top3{margin:14px 0; padding:11px; background:var(--surface); border:1px solid var(--line); border-radius:14px;
-    font-size:12.5px; line-height:1.9; font-variant-numeric:tabular-nums}
-  .m-mine{font-size:12.5px; color:var(--text-dim); margin-bottom:16px; line-height:1.6; font-variant-numeric:tabular-nums}
-  .m-mine b{color:var(--brand-300)}
-  .m-btn{width:100%; appearance:none; border:0; cursor:pointer; color:#fff; font-weight:800; font-size:14px;
-    padding:13px; border-radius:13px; background:linear-gradient(135deg,var(--brand-500),var(--accent))}
+  .cs-send:active{transform:scale(.985)}
+  .cs-guard{margin-top:11px; font-size:11px; color:var(--text-dim); text-align:center; font-variant-numeric:tabular-nums}
+  .cs-guard u{cursor:pointer; color:var(--brand-300)}
+  /* 완료 연출 */
+  .success{position:absolute; inset:0; z-index:70; display:grid; place-items:center; background:rgba(5,3,12,.74);
+    opacity:0; pointer-events:none; transition:opacity .3s; text-align:center}
+  .success.on{opacity:1; pointer-events:auto}
+  .sc-card{width:80%; animation:rise .4s ease-out}
+  @keyframes rise{from{opacity:0; transform:translateY(14px)} to{opacity:1; transform:none}}
+  .sc-em{font-size:74px; animation:popb .55s cubic-bezier(.18,1.4,.4,1)}
+  @keyframes popb{from{transform:scale(.3); opacity:0} to{transform:scale(1); opacity:1}}
+  .sc-card h3{margin:8px 0 4px; font-size:19px}
+  .sc-card .sc-sub{font-size:13px; color:var(--text-dim); line-height:1.55; margin-bottom:4px}
+  .sc-card .sc-fx{font-size:11.5px; color:var(--brand-300); margin-bottom:20px}
+  .sc-btns{display:flex; gap:9px}
+  .sc-btns button{flex:1; appearance:none; cursor:pointer; border:1px solid var(--line); background:var(--surface);
+    color:var(--text); font-weight:800; font-size:13px; padding:13px 6px; border-radius:13px}
+  .sc-btns button.primary{border:0; color:#fff; background:linear-gradient(135deg,var(--brand-500),var(--accent))}
   #fx{position:absolute; inset:0; pointer-events:none; z-index:75}
   @media (max-width:460px){
     body{padding:0} .tagline{display:none}
     .phone{width:100vw; height:100vh; border-radius:0; box-shadow:none}
     .notch{display:none} header{padding-top:max(16px,env(safe-area-inset-top))}
-    .pickbar{padding-bottom:max(14px,env(safe-area-inset-bottom))}
   }
 </style>
 </head>
 <body>
   <div class="stage">
-    <div class="tagline">TOONAI · <b>크루 엑셀 후원</b> 프로토타입 — 행을 탭해 후원하세요.<br>
-      데모: <b>2분 라운드</b> · 경쟁 팬덤의 후원이 자동 시뮬레이션됩니다 (마감 30초 전 = 스나이핑 타임)</div>
+    <div class="tagline">TOONAI · <b>시그니처 후원</b> — 순위·현황은 방송에서 보니까 빼고,<br>
+      <b>① 누구에게</b> · <b>② 어떤 시그니처로</b> 단 두 번의 선택으로 끝냅니다.</div>
     <div class="phone">
       <div class="notch"></div>
       <header>
-        <button class="iconbtn" id="back" title="처음부터">‹</button>
+        <button class="iconbtn" id="back" title="새로고침">‹</button>
         <div class="h-title">
-          <div class="t1">하나비 크루 · 엑셀 후원</div>
-          <div class="t2">크루 엑셀 모드 · 실시간 순위전</div>
+          <div class="t1">하나비 크루 · 시그니처 후원</div>
+          <div class="t2">엑셀 합방 출연자에게 시그니처를 후원하세요</div>
         </div>
-        <div class="roundbadge" id="roundBadge">R3</div>
       </header>
-      <div class="stats">
-        <div class="stat timer" id="timerPill">⏱ 02:00</div>
-        <div class="stat"><span class="dim">총</span> <span id="totalStat">₩0</span></div>
-        <div class="stat">👀 <span id="viewStat">12,418</span></div>
+
+      <!-- ① WHO -->
+      <div class="who">
+        <div class="lbl">오늘 엑셀 출연 · <b id="crewCount">5명</b> — 후원할 출연자를 골라주세요</div>
+        <div class="strip" id="strip"></div>
       </div>
-      <div class="gridhead"><span>순위</span><span></span><span>크루</span><span class="r">후원액</span><span class="c">변동</span></div>
-      <div class="board" id="board"></div>
-      <div class="pickbar">
-        <div class="pb-row1">
-          <span class="pk">내 픽 <b id="pbName">하나비</b> · <b id="pbRank">-</b></span>
-          <span class="gap" id="pbGap"></span>
-        </div>
-        <div class="gauge"><i id="gaugeFill"></i></div>
-        <div class="pb-contrib" id="pbContrib" style="display:none"></div>
-        <div class="pb-chips" id="pbChips"></div>
-        <div class="pb-note">원탭 후원 · 사전 동의됨 (데모) — 행을 탭하면 다른 멤버에게도 보낼 수 있어요</div>
-      </div>
-      <div class="toastwrap" id="toastwrap"></div>
+
+      <!-- ② WHICH -->
+      <div class="body" id="body"></div>
+
+      <!-- 확인 시트 -->
       <div class="dim" id="dim" style="display:none"></div>
       <div class="sheet" id="sheet">
         <div class="grab"></div>
-        <div class="s-head">
-          <div class="s-avt" id="sAvt">🐰</div>
-          <div class="s-info">
-            <div class="s-name" id="sName">하나비 · 2위</div>
-            <div class="s-sub" id="sSub"></div>
+        <div class="cs-head">
+          <div class="cs-sem" id="csEm">💗</div>
+          <div class="cs-info">
+            <div class="cs-to">받는 분 <b id="csTo">하나비</b></div>
+            <div class="cs-nm" id="csNm">심쿵 하트</div>
+            <div class="cs-fx" id="csFx">하트가 팡팡 터져요</div>
           </div>
-          <span id="sPickSlot"></span>
+          <div class="cs-amt" id="csAmt">₩2,000</div>
         </div>
-        <div class="s-amts" id="sAmts"></div>
-        <div class="s-custom">
-          <input id="sInput" inputmode="numeric" placeholder="직접 입력 (원)" autocomplete="off" />
-          <button id="sApply">적용</button>
+        <div class="cs-custom" id="csCustom">
+          <input id="csInput" inputmode="numeric" placeholder="후원 금액 입력 (원)" autocomplete="off" />
         </div>
-        <div class="s-label">응원 한마디 — 투니의 추천 (선택)</div>
-        <div class="s-msgs" id="sMsgs"></div>
-        <button class="s-send" id="sSend">응원 보내기</button>
-        <div class="s-guard" id="sGuard"></div>
+        <div class="cs-label">응원 한마디 — 선택 (투니 추천)</div>
+        <div class="cs-msgs" id="csMsgs"></div>
+        <button class="cs-send" id="csSend">시그니처 보내기</button>
+        <div class="cs-guard" id="csGuard"></div>
       </div>
-      <div class="modal" id="modal">
-        <div class="m-card">
-          <div class="m-trophy">🏆</div>
-          <h3 id="mTitle">우승!</h3>
-          <div class="m-sub" id="mSub"></div>
-          <div class="m-top3" id="mTop3"></div>
-          <div class="m-mine" id="mMine"></div>
-          <button class="m-btn" id="nextRound">다음 라운드 시작 ▶</button>
+
+      <!-- 완료 연출 -->
+      <div class="success" id="success">
+        <div class="sc-card">
+          <div class="sc-em" id="scEm">💗</div>
+          <h3 id="scTitle">전달 완료!</h3>
+          <div class="sc-sub" id="scSub"></div>
+          <div class="sc-fx" id="scFx"></div>
+          <div class="sc-btns">
+            <button class="primary" id="scAgain">💜 같은 분께 한 번 더</button>
+            <button id="scOther">🔄 다른 출연자</button>
+          </div>
         </div>
       </div>
+
       <canvas id="fx"></canvas>
     </div>
   </div>
@@ -256,404 +219,227 @@
   "use strict";
   const $ = s => document.querySelector(s);
   const fmt = n => '₩' + Math.round(n).toLocaleString('ko-KR');
-  const fmtK = n => n >= 1e8 ? '₩' + (n/1e8).toFixed(1) + '억' : n >= 1e4 ? '₩' + Math.round(n/1e4).toLocaleString('ko-KR') + '만' : fmt(n);
-  const r1000 = v => Math.ceil(v/1000)*1000;
-  const rand = (a,b) => a + Math.random()*(b-a);
-  const pickW = w => { let s=0; for(const k in w) s+=w[k]; let r=Math.random()*s;
-    for(const k in w){ r-=w[k]; if(r<=0) return k; } return Object.keys(w)[0]; };
 
   // ---------------- 데이터 ----------------
+  // 출연자별 '시그니처' = 대표 후원 상품(금액·연출 내장). tier: basic/special/legend
   const CREW = [
-    {id:'yuria',  name:'유리아', emoji:'🦊', fan:'여우단'},
-    {id:'hanabi', name:'하나비', emoji:'🐰', fan:'토끼단'},
-    {id:'mint',   name:'민트',   emoji:'🐱', fan:'야옹단'},
-    {id:'doyun',  name:'도윤',   emoji:'🐺', fan:'늑대단'},
-    {id:'dawn',   name:'새벽',   emoji:'🦉', fan:'올빼미단'},
+    {id:'yuria', name:'유리아', emoji:'🦊', fan:'여우단', sigs:[
+      {em:'🌧️', nm:'여우비',     amt:2000,  tier:'basic',   fx:'여우비가 촉촉이 내려요'},
+      {em:'✨', nm:'홀린다',      amt:5000,  tier:'basic',   fx:'눈빛에 홀리는 연출', badge:'ai'},
+      {em:'🔥', nm:'나인테일',    amt:10000, tier:'special', fx:'꼬리 9개가 화르륵'},
+      {em:'👑', nm:'천년여우',    amt:50000, tier:'legend',  fx:'천년여우 변신 풀스크린'},
+    ]},
+    {id:'hanabi', name:'하나비', emoji:'🐰', fan:'토끼단', sigs:[
+      {em:'💗', nm:'심쿵 하트',   amt:2000,  tier:'basic',   fx:'하트가 팡팡 터져요'},
+      {em:'🥕', nm:'당근 점프',   amt:5000,  tier:'basic',   fx:'당근 먹고 콩콩 점프'},
+      {em:'🐰', nm:'토끼굴 파티', amt:10000, tier:'special', fx:'토끼 우르르 + 시그 음성', badge:'hot'},
+      {em:'🌙', nm:'달토끼 레전드',amt:50000, tier:'legend',  fx:'달토끼 떡방아 풀스크린'},
+    ]},
+    {id:'mint', name:'민트', emoji:'🐱', fan:'야옹단', sigs:[
+      {em:'😻', nm:'골골송',      amt:2000,  tier:'basic',   fx:'골골골 진동 음성'},
+      {em:'🐟', nm:'츄르 타임',   amt:5000,  tier:'basic',   fx:'츄르 쪽쪽 먹방'},
+      {em:'💨', nm:'우다다 질주',  amt:10000, tier:'special', fx:'우다다 질주 연출', badge:'hot'},
+      {em:'⚡', nm:'고양이신 레전드',amt:50000, tier:'legend', fx:'냥신 강림 풀스크린'},
+    ]},
+    {id:'doyun', name:'도윤', emoji:'🐺', fan:'늑대단', sigs:[
+      {em:'🌕', nm:'하울링',      amt:2000,  tier:'basic',   fx:'아우~ 하울링 음성'},
+      {em:'🐺', nm:'늑대의 포효',  amt:5000,  tier:'basic',   fx:'카리스마 포효'},
+      {em:'🌙', nm:'달빛 질주',   amt:10000, tier:'special', fx:'달빛 아래 질주'},
+      {em:'👑', nm:'알파 레전드',  amt:50000, tier:'legend',  fx:'알파 늑대 군림 풀스크린', badge:'hot'},
+    ]},
+    {id:'dawn', name:'새벽', emoji:'🦉', fan:'올빼미단', sigs:[
+      {em:'🦉', nm:'부엉 인사',   amt:2000,  tier:'basic',   fx:'부엉~ 인사 연출'},
+      {em:'⭐', nm:'별빛 응원',   amt:5000,  tier:'basic',   fx:'별빛이 쏟아져요', badge:'hot'},
+      {em:'🌌', nm:'새벽 감성',   amt:10000, tier:'special', fx:'잔잔한 새벽 감성 연출'},
+      {em:'🌠', nm:'불면의 현자', amt:50000, tier:'legend',  fx:'별똥별 풀스크린 + 시그 음성'},
+    ]},
   ];
-  const FIRST_BASE = {yuria:1250000, hanabi:1180000, mint:890000, doyun:720000, dawn:410000};
-  const SIM_W = {yuria:3.4, hanabi:1.1, mint:2.3, doyun:1.7, dawn:1.0};
-  const ROUND_SEC = 120, SNIPE_AT = 30, DAY_LIMIT = 300000;
-  const MSGS = ['가즈아 1위로!! 🚀','우리 크루 우승 가자 🔥','스나이핑 들어갑니다 😎','조용히 보태고 갑니다 🤫'];
+  const MSGS = ['오늘도 화이팅 💜','우리 크루 최고 🔥','조용히 보태고 가요 🤫','시그니처 받아랏 😎'];
+  const DAY_LIMIT = 300000;
+  const TIER_TXT = {special:'SPECIAL', legend:'LEGEND'};
+  const byId = id => CREW.find(c => c.id === id);
 
   // ---------------- 상태 ----------------
-  let amounts = {}, shown = {}, prevRanks = {}, dltTimers = {};
-  let myPick = 'hanabi', myContrib = 0, myToday = 0, supporterRank = null;
-  let round = 3, timeLeft = ROUND_SEC, snipe = false, running = false, softMode = false, softNoticed = false;
-  let viewers = 12418, lastNudge = 0, lastMyDonate = 0, combo = 0;
-  let simT = null, clockT = null, viewT = null;
-  const rows = {};
-  const board = $('#board');
-  const byId = id => CREW.find(m => m.id === id);
+  let selPerson = null, sentToday = 0;
+  let cur = null;     // 확인 시트 대상: {personId, sig, custom}
+  let selAmount = 0, selMsg = null;
 
-  // ---------------- 순위판 ----------------
-  function buildRows(){
-    board.innerHTML = '';
-    CREW.forEach(m => {
+  // ---------------- ① WHO 라인업 ----------------
+  function renderStrip(){
+    $('#crewCount').textContent = CREW.length + '명';
+    const strip = $('#strip'); strip.innerHTML = '';
+    CREW.forEach(c => {
       const el = document.createElement('div');
-      el.className = 'rrow'; el.dataset.id = m.id;
-      el.innerHTML = `
-        <div class="rk"></div>
-        <div class="avt">${m.emoji}</div>
-        <div class="nm">${m.name}<span class="sub"></span></div>
-        <div class="amt">₩0</div>
-        <div class="dlt">·</div>`;
-      el.onclick = () => openSheet(m.id);
-      rows[m.id] = el; board.appendChild(el);
+      el.className = 'persona' + (c.id === selPerson ? ' sel' : (selPerson ? '' : ' hint'));
+      el.innerHTML = `<div class="ring">${c.emoji}</div><div class="pn">${c.name}</div>`;
+      el.onclick = () => selectPerson(c.id);
+      strip.appendChild(el);
     });
   }
-  function getSorted(){ return [...CREW].sort((a,b) => amounts[b.id]-amounts[a.id]); }
-  function rankOf(id){ return getSorted().findIndex(m => m.id===id) + 1; }
-
-  function tweenAmt(id, target){
-    const el = rows[id].querySelector('.amt');
-    const from = shown[id] == null ? target : shown[id];
-    shown[id] = target;
-    if(from === target){ el.textContent = fmt(target); return; }
-    const t0 = performance.now(), D = 450;
-    (function step(t){
-      const k = Math.min(1, (t-t0)/D), e = 1-Math.pow(1-k,3);
-      el.textContent = fmt(from + (target-from)*e);
-      if(k < 1) requestAnimationFrame(step);
-    })(t0);
+  function selectPerson(id){
+    selPerson = id;
+    renderStrip();
+    renderSignatures();
   }
 
-  function render(reason){
-    const sorted = getSorted();
-    const newRanks = {};
-    sorted.forEach((m,i) => newRanks[m.id] = i+1);
-
-    // FLIP: 위치 기억 → 정렬 반영 → 이동 애니메이션
-    const oldTop = {};
-    Object.keys(rows).forEach(id => oldTop[id] = rows[id].getBoundingClientRect().top);
-    sorted.forEach(m => board.appendChild(rows[m.id]));
-
-    sorted.forEach((m,i) => {
-      const el = rows[m.id], rk = i+1;
-      el.querySelector('.rk').innerHTML = rk<=3 ? `<span class="medal">${['🥇','🥈','🥉'][rk-1]}</span>` : rk;
-      el.querySelector('.nm .sub').innerHTML = m.fan + (m.id===myPick ? ' · <b>내 픽 💜</b>' : '');
-      el.classList.toggle('r1', rk===1);
-      el.classList.toggle('mine', m.id===myPick);
-      tweenAmt(m.id, amounts[m.id]);
-      const prev = prevRanks[m.id];
-      if(prev && prev !== rk){
-        const d = prev - rk, dl = el.querySelector('.dlt');
-        dl.textContent = d>0 ? '▲'+d : '▼'+(-d);
-        dl.className = 'dlt ' + (d>0 ? 'up' : 'down');
-        clearTimeout(dltTimers[m.id]);
-        dltTimers[m.id] = setTimeout(() => { dl.textContent='·'; dl.className='dlt'; }, 4000);
-      }
-      const delta = oldTop[m.id] - el.getBoundingClientRect().top;
-      if(Math.abs(delta) > 2)
-        el.animate([{transform:`translateY(${delta}px)`},{transform:'none'}],
-          {duration:450, easing:'cubic-bezier(.2,.8,.2,1)'});
+  // ---------------- ② WHICH 시그니처 ----------------
+  function renderSignatures(){
+    const body = $('#body');
+    if(!selPerson){
+      body.innerHTML = `<div class="empty">
+        <div class="big">👆</div>
+        <div class="e1">후원할 출연자를 골라주세요</div>
+        <div class="e2">위 라인업에서 한 명을 선택하면<br>그 사람의 시그니처가 나타나요</div>
+      </div>`;
+      return;
+    }
+    const c = byId(selPerson);
+    let html = `<div class="sectitle"><span class="em">${c.emoji}</span> ${c.name}의 시그니처</div><div class="grid">`;
+    c.sigs.forEach((s,i) => {
+      const tierTag = s.tier === 'legend'
+        ? `<div class="ribbon">LEGEND</div>`
+        : (s.tier === 'special' ? `<div class="tier-tag special">SPECIAL</div>` : '');
+      const badge = s.badge === 'hot' ? `<div class="badge hot">🔥 인기</div>`
+                  : s.badge === 'ai' ? `<div class="badge ai">🤖 추천</div>` : '';
+      html += `<div class="sig ${s.tier}" data-i="${i}">
+        ${tierTag}${badge}
+        <span class="sem">${s.em}</span>
+        <div class="snm">${s.nm}</div>
+        <div class="sfx">${s.fx}</div>
+        <div class="samt">${fmt(s.amt)}</div>
+      </div>`;
     });
-
-    // 시뮬(상대 팬덤) 후원으로 내 픽이 추월당했을 때 → 투니 경보
-    if(reason === 'sim' && prevRanks[myPick] && newRanks[myPick] > prevRanks[myPick]) nudgeOvertake();
-    prevRanks = newRanks;
-
-    $('#totalStat').textContent = fmtK(CREW.reduce((s,m) => s+amounts[m.id], 0));
-    updatePickbar();
-    if(sheetFor) refreshSheetHead();
+    html += `<div class="customcard" id="customCard">✏️ 직접 금액으로 후원하기</div></div>`;
+    body.innerHTML = html;
+    body.scrollTop = 0;
+    body.querySelectorAll('.sig').forEach(el =>
+      el.onclick = () => openConfirm(selPerson, c.sigs[+el.dataset.i], false));
+    $('#customCard').onclick = () => openConfirm(selPerson,
+      {em:'✏️', nm:'직접 금액 후원', amt:5000, tier:'basic', fx:'원하는 금액으로 응원'}, true);
   }
 
-  function bump(id){
-    rows[id].classList.remove('bump'); void rows[id].offsetWidth; rows[id].classList.add('bump');
-  }
-
-  // ---------------- 내 픽 바 ----------------
-  function gapInfo(id){
-    const sorted = getSorted(), rk = rankOf(id);
-    if(rk === 1){
-      const lead = amounts[id] - (sorted[1] ? amounts[sorted[1].id] : 0);
-      return {rk, lead, gap:0, reverseAmt:r1000(Math.max(10000, lead)), defend:true};
-    }
-    const gap = amounts[sorted[0].id] - amounts[id];
-    return {rk, gap, reverseAmt:r1000(gap+1000), defend:false};
-  }
-  function updatePickbar(){
-    const m = byId(myPick), g = gapInfo(myPick), sorted = getSorted();
-    $('#pbName').textContent = m.name;
-    $('#pbRank').textContent = g.rk + '위';
-    $('#pbGap').textContent = g.defend ? `2위와 격차 ${fmt(g.lead)} 🛡️` : `1위까지 ${fmt(g.gap)}`;
-    $('#gaugeFill').style.width = (g.defend ? 100 :
-      Math.min(100, amounts[myPick] / Math.max(1, amounts[sorted[0].id]) * 100)) + '%';
-    const c = $('#pbContrib');
-    if(myContrib > 0){
-      c.style.display = '';
-      c.innerHTML = `오늘 내 기여 <b>${fmt(myContrib)}</b> · ${m.name} 서포터 <b>${supporterRank}위</b>` +
-        (softMode ? ' · ☕ 잠깐 쉬어가요' : '');
-    }
-    const chips = $('#pbChips'); chips.innerHTML = '';
-    [10000, 30000].forEach(v => {
-      const b = document.createElement('button');
-      b.className = 'pchip'; b.textContent = fmt(v);
-      b.onclick = () => donate(myPick, v, null);
-      chips.appendChild(b);
-    });
-    if(!softMode){
-      const rv = document.createElement('button');
-      rv.className = 'pchip rev';
-      rv.textContent = (g.defend ? '🛡️ 굳히기 ' : '⚡ 역전 ') + fmt(g.reverseAmt);
-      rv.onclick = () => donate(myPick, g.reverseAmt, null);
-      chips.appendChild(rv);
-    }
-    const ed = document.createElement('button');
-    ed.className = 'pchip edit'; ed.textContent = '✏️';
-    ed.title = '금액 직접 입력';
-    ed.onclick = () => openSheet(myPick);
-    chips.appendChild(ed);
-  }
-
-  // ---------------- 후원 ----------------
-  function donate(id, amt, msg){
-    if(!running) return;
-    const before = rankOf(id);
-    amounts[id] += amt;
-    myToday += amt;
-    if(id === myPick){
-      myContrib += amt;
-      supporterRank = supporterRank == null ? 9 : Math.max(1, supporterRank-1);
-    }
-    const now = Date.now();
-    combo = (now - lastMyDonate < 12000) ? combo+1 : 1;
-    lastMyDonate = now;
-    render('me'); bump(id);
-    const after = rankOf(id), m = byId(id), g = gapInfo(id);
-    if(after === 1 && before > 1){
-      confetti(120);
-      toast(`👑 <b>${m.name} 1위 등극!!</b> 내 후원이 결정타예요 🎉`, {dur:5000});
-    } else if(after < before){
-      toast(`🚀 <b>${m.name}</b> ▲${before-after} 상승! 1위까지 ${fmt(g.gap)}`);
-    } else if(combo >= 2){
-      toast(`🔥 <b>${combo}연속 후원!</b> ${m.name}에게 ${fmt(amt)} 전달`);
-    } else {
-      toast(`💜 <b>${m.name}</b>에게 ${fmt(amt)} 전달! ` + (g.defend ? `격차 ${fmt(g.lead)} 수성 중` : `격차 ${fmt(g.gap)} 남았어요`));
-    }
-    if(!softMode && myToday >= DAY_LIMIT){
-      softMode = true;
-      if(!softNoticed){
-        softNoticed = true;
-        setTimeout(() => toast(`오늘 많이 응원했어요! 잠깐 쉬어가도 좋아요 ☕ <b>(완화 모드)</b>`, {dur:6000}), 1200);
-      }
-      updatePickbar();
-    }
-  }
-
-  // ---------------- 시뮬레이션 (경쟁 팬덤) ----------------
-  function simDonate(){
-    const id = pickW(SIM_W);
-    const pool = snipe ? [5000,10000,10000,30000,30000,50000,100000]
-                       : [1000,3000,5000,5000,10000,10000,30000];
-    amounts[id] += pool[Math.floor(Math.random()*pool.length)];
-    render('sim'); bump(id);
-  }
-  function scheduleSim(){
-    if(!running) return;
-    simT = setTimeout(() => { simDonate(); scheduleSim(); }, snipe ? rand(700,1500) : rand(1800,3600));
-  }
-  function nudgeOvertake(){
-    const now = Date.now();
-    if(now - lastNudge < 10000 || softMode) return;
-    lastNudge = now;
-    const g = gapInfo(myPick), m = byId(myPick), leader = getSorted()[0];
-    toast(`🚨 <b>${leader.name}</b>님이 ${m.name}님을 추월! 격차 ${fmt(g.gap)}`,
-      {type:'alert', dur:6500, action:{label:'⚡ 바로 역전', fn:() => openSheet(myPick, g.reverseAmt)}});
-  }
-
-  // ---------------- 토스트 ----------------
-  function toast(html, opts){
-    opts = opts || {};
-    const wrap = $('#toastwrap'); wrap.innerHTML = '';
-    const t = document.createElement('div');
-    t.className = 'toast' + (opts.type === 'alert' ? ' alert' : '');
-    t.innerHTML = `<div class="tavt">🤖</div><div class="body">${html}</div>`;
-    if(opts.action){
-      const b = document.createElement('button');
-      b.className = 'act'; b.textContent = opts.action.label;
-      b.onclick = () => { t.remove(); opts.action.fn(); };
-      t.appendChild(b);
-    }
-    wrap.appendChild(t);
-    setTimeout(() => { if(t.parentNode) t.remove(); }, opts.dur || 4000);
-  }
-
-  // ---------------- 바텀시트 ----------------
-  let sheetFor = null, selAmount = 0, selMsg = null;
-  function openSheet(id, presetAmt){
-    if(!running) return;
-    sheetFor = id; selMsg = null;
-    refreshSheetHead();
-    buildSheetAmounts(presetAmt);
-    buildSheetMsgs();
-    $('#sInput').value = '';
-    refreshGuard();
-    $('#dim').style.display = ''; requestAnimationFrame(() => $('#dim').classList.add('on'));
-    $('#sheet').classList.add('on');
-  }
-  function closeSheet(){
-    sheetFor = null;
-    $('#sheet').classList.remove('on');
-    const d = $('#dim'); d.classList.remove('on');
-    setTimeout(() => { if(!sheetFor) d.style.display = 'none'; }, 260);
-  }
-  function refreshSheetHead(){
-    if(!sheetFor) return;
-    const m = byId(sheetFor), g = gapInfo(sheetFor);
-    $('#sAvt').textContent = m.emoji;
-    $('#sName').textContent = `${m.name} · ${g.rk}위`;
-    $('#sSub').textContent = g.defend ? `1위 수성 중 · 2위와 격차 ${fmt(g.lead)}` : `1위까지 ${fmt(g.gap)}`;
-    const slot = $('#sPickSlot');
-    if(sheetFor === myPick) slot.innerHTML = '<span class="s-mypick">내 픽 💜</span>';
-    else {
-      slot.innerHTML = '<button class="s-pickbtn">내 픽으로 설정</button>';
-      slot.querySelector('button').onclick = () => { myPick = sheetFor; render('pick'); refreshSheetHead(); };
-    }
-  }
-  function buildSheetAmounts(presetAmt){
-    const g = gapInfo(sheetFor);
-    const list = [5000,10000,30000,50000];
-    const wrap = $('#sAmts'); wrap.innerHTML = '';
-    list.forEach(v => {
-      const b = document.createElement('button');
-      b.className = 'schip'; b.textContent = fmt(v); b.dataset.v = v;
-      b.onclick = () => selectAmt(v, b);
-      wrap.appendChild(b);
-    });
-    if(!softMode){
-      const b = document.createElement('button');
-      b.className = 'schip rev'; b.dataset.v = g.reverseAmt;
-      b.textContent = (g.defend ? '🛡️ 굳히기 ' : '⚡ 역전 ') + fmt(g.reverseAmt);
-      b.onclick = () => selectAmt(g.reverseAmt, b);
-      wrap.appendChild(b);
-    }
-    const want = presetAmt || 10000;
-    const revChip = wrap.querySelector('.schip.rev');
-    const target = [...wrap.children].find(c => +c.dataset.v === want)
-      || (presetAmt && revChip) || wrap.children[1];
-    selectAmt(+target.dataset.v, target);
-  }
-  function selectAmt(v, el){
-    selAmount = v;
-    document.querySelectorAll('#sAmts .schip').forEach(c => c.classList.remove('sel'));
-    if(el) el.classList.add('sel');
-    $('#sSend').textContent = `${fmt(v)} 응원 보내기`;
-  }
-  function buildSheetMsgs(){
-    const wrap = $('#sMsgs'); wrap.innerHTML = '';
+  // ---------------- 확인 시트 ----------------
+  function openConfirm(personId, sig, custom){
+    cur = {personId, sig, custom};
+    selMsg = null;
+    selAmount = custom ? 0 : sig.amt;
+    const c = byId(personId);
+    $('#csEm').textContent = sig.em;
+    $('#csTo').textContent = c.name;
+    $('#csNm').textContent = sig.nm;
+    $('#csFx').textContent = sig.fx;
+    $('#csCustom').classList.toggle('on', !!custom);
+    if(custom){ $('#csInput').value = ''; $('#csAmt').textContent = '₩—'; }
+    else $('#csAmt').textContent = fmt(sig.amt);
+    // 응원 한마디
+    const mw = $('#csMsgs'); mw.innerHTML = '';
     MSGS.forEach(t => {
       const b = document.createElement('button');
       b.className = 'mchip'; b.textContent = t;
       b.onclick = () => {
         selMsg = (selMsg === t) ? null : t;
-        wrap.querySelectorAll('.mchip').forEach(c => c.classList.toggle('sel', c.textContent === selMsg));
+        mw.querySelectorAll('.mchip').forEach(x => x.classList.toggle('sel', x.textContent === selMsg));
       };
-      wrap.appendChild(b);
+      mw.appendChild(b);
     });
+    updateSendLabel(); refreshGuard();
+    $('#dim').style.display = ''; requestAnimationFrame(() => $('#dim').classList.add('on'));
+    $('#sheet').classList.add('on');
+    if(custom) setTimeout(() => $('#csInput').focus(), 320);
+  }
+  function updateSendLabel(){
+    $('#csSend').textContent = selAmount >= 1000 ? `${fmt(selAmount)} 시그니처 보내기` : '시그니처 보내기';
   }
   function refreshGuard(){
-    const gd = $('#sGuard');
-    gd.classList.toggle('warn', softMode);
-    gd.innerHTML = softMode
-      ? `오늘 ${fmt(myToday)} 후원했어요 · 잠깐 쉬어가도 좋아요 ☕ <u id="limitLink">한도 설정</u>`
-      : `오늘 후원 ${fmt(myToday)} · <u id="limitLink">한도 설정</u>`;
-    gd.querySelector('#limitLink').onclick = e => {
-      e.stopPropagation();
-      toast('한도 설정 화면은 본 구현에서 제공돼요 (데모) 🛡️');
+    const near = sentToday >= DAY_LIMIT * 0.8;
+    $('#csGuard').innerHTML = (near ? '오늘 많이 응원했어요 ☕ ' : '') +
+      `오늘 후원 ${fmt(sentToday)} · <u id="limitLink">한도 설정</u>`;
+    $('#csGuard').querySelector('#limitLink').onclick = e => {
+      e.stopPropagation(); toastLite('한도 설정 화면은 본 구현에서 제공돼요 (데모) 🛡️');
     };
   }
-  $('#sApply').onclick = () => {
-    const v = parseInt($('#sInput').value.replace(/[^0-9]/g,''), 10);
-    if(!v || v < 1000){ toast('1,000원부터 보낼 수 있어요!'); return; }
-    selectAmt(v, null);
+  $('#csInput').addEventListener('input', e => {
+    selAmount = parseInt(e.target.value.replace(/[^0-9]/g,''), 10) || 0;
+    $('#csAmt').textContent = selAmount ? fmt(selAmount) : '₩—';
+    updateSendLabel();
+  });
+  function closeConfirm(){
+    $('#sheet').classList.remove('on');
+    const d = $('#dim'); d.classList.remove('on');
+    setTimeout(() => d.style.display = 'none', 260);
+  }
+  $('#dim').onclick = closeConfirm;
+  $('#csSend').onclick = () => {
+    if(cur.custom && selAmount < 1000){ toastLite('1,000원부터 후원할 수 있어요!'); return; }
+    const amt = selAmount, sig = cur.sig, c = byId(cur.personId);
+    sentToday += amt;
+    closeConfirm();
+    setTimeout(() => showSuccess(c, sig, amt), 220);
   };
-  $('#sSend').onclick = () => {
-    const id = sheetFor, amt = selAmount;
-    closeSheet();
-    setTimeout(() => donate(id, amt, selMsg), 200);
-  };
-  $('#dim').onclick = closeSheet;
 
-  // ---------------- 타이머 / 라운드 ----------------
-  function tickClock(){
-    timeLeft--;
-    const mm = String(Math.floor(Math.max(0,timeLeft)/60)).padStart(1,'0');
-    const ss = String(Math.max(0,timeLeft)%60).padStart(2,'0');
-    const pill = $('#timerPill');
-    pill.textContent = `⏱ ${mm}:${ss}`;
-    if(!snipe && timeLeft <= SNIPE_AT && timeLeft > 0){
-      snipe = true;
-      pill.classList.add('urgent');
-      if(!softMode) toast(`⏱ <b>마감 ${SNIPE_AT}초 전</b>이에요 — 스나이핑 타임!`, {dur:5000});
-      clearTimeout(simT); scheduleSim();
-    }
-    if(timeLeft <= 0) endRound();
+  // ---------------- 완료 연출 ----------------
+  function showSuccess(c, sig, amt){
+    $('#scEm').textContent = sig.em;
+    $('#scTitle').textContent = `${c.name}님께 전달! 🎉`;
+    $('#scSub').innerHTML = `<b style="color:var(--text)">${sig.nm}</b> · ${fmt(amt)}` +
+      (selMsg ? `<br>"${selMsg}"` : '');
+    $('#scFx').textContent = `방송 화면에 「${sig.fx}」 연출이 재생됐어요`;
+    $('#success').classList.add('on');
+    burst(sig.em);
   }
-  function endRound(){
-    running = false; snipe = false;
-    clearTimeout(simT); clearInterval(clockT); clearInterval(viewT);
-    closeSheet();
-    $('#timerPill').classList.remove('urgent');
-    $('#timerPill').textContent = '⏱ 마감!';
-    const sorted = getSorted(), win = sorted[0], iWon = win.id === myPick;
-    $('#mTitle').textContent = `${win.emoji} ${win.name} 우승!` + (iWon ? ' 🎉' : '');
-    $('#mSub').textContent = `ROUND ${round} 최종 · 총 후원 ${fmtK(CREW.reduce((s,m)=>s+amounts[m.id],0))}`;
-    $('#mTop3').innerHTML = sorted.slice(0,3).map((m,i) =>
-      `${['🥇','🥈','🥉'][i]} ${m.name} ${fmt(amounts[m.id])}`).join('<br>');
-    $('#mMine').innerHTML = myContrib > 0
-      ? `이번 라운드 내 기여 <b>${fmt(myContrib)}</b> · ${byId(myPick).name} 서포터 <b>${supporterRank}위</b>` +
-        (iWon ? '<br>🏅 우승 기여 뱃지 획득!' : '')
-      : `이번 라운드는 관전! 다음 라운드에 함께해요 💜`;
-    $('#modal').classList.add('on');
-    confetti(iWon ? 170 : 90);
-  }
-  function startRound(seed){
-    amounts = {}; shown = {}; prevRanks = {};
-    CREW.forEach(m => {
-      amounts[m.id] = seed ? FIRST_BASE[m.id] : r1000(rand(20000, 90000));
-      shown[m.id] = null;
-    });
-    myContrib = 0; timeLeft = ROUND_SEC; snipe = false; running = true; combo = 0;
-    $('#roundBadge').textContent = 'R' + round;
-    $('#timerPill').classList.remove('urgent');
-    buildRows(); render('init');
-    clockT = setInterval(tickClock, 1000);
-    viewT = setInterval(() => {
-      viewers = Math.max(9000, viewers + Math.round(rand(-90, 140)));
-      $('#viewStat').textContent = viewers.toLocaleString('ko-KR');
-    }, 3000);
-    scheduleSim();
-  }
-  $('#nextRound').onclick = () => {
-    $('#modal').classList.remove('on');
-    round++;
-    startRound(false);
-    toast(`ROUND ${round} 시작! 이번 라운드도 함께해요 💜`, {dur:4500});
+  $('#scAgain').onclick = () => { $('#success').classList.remove('on'); /* 같은 사람 유지 */ };
+  $('#scOther').onclick = () => {
+    $('#success').classList.remove('on');
+    $('#strip').scrollIntoView({behavior:'smooth'});
+    toastLite('위 라인업에서 다른 출연자를 골라보세요 👆');
   };
   $('#back').onclick = () => location.reload();
 
-  // ---------------- 컨페티 ----------------
-  function confetti(n){
-    const c = $('#fx'), ctx = c.getContext('2d');
-    const r = c.getBoundingClientRect(); c.width = r.width; c.height = r.height;
+  // ---------------- 라이트 토스트 ----------------
+  let toastT = null;
+  function toastLite(msg){
+    let t = $('#toastLite');
+    if(!t){
+      t = document.createElement('div'); t.id = 'toastLite';
+      t.style.cssText = 'position:absolute;left:50%;bottom:24px;transform:translateX(-50%);z-index:90;'+
+        'background:#241b44;border:1px solid var(--line);color:var(--text);font-size:12.5px;'+
+        'padding:10px 16px;border-radius:999px;box-shadow:0 10px 30px rgba(0,0,0,.5);max-width:84%;text-align:center';
+      $('.phone').appendChild(t);
+    }
+    t.textContent = msg; t.style.opacity = '1';
+    clearTimeout(toastT); toastT = setTimeout(() => t.style.opacity = '0', 2600);
+  }
+
+  // ---------------- 버스트 연출 (시그니처 이모지) ----------------
+  function burst(emoji){
+    const cv = $('#fx'), ctx = cv.getContext('2d');
+    const r = cv.getBoundingClientRect(); cv.width = r.width; cv.height = r.height;
     const colors = ['#8B5CF6','#F472B6','#FBBF24','#34D399','#C4B5FD','#fff'];
     const P = [];
-    for(let i=0;i<n;i++) P.push({
-      x:r.width/2, y:r.height*0.32, vx:rand(-4.5,4.5), vy:rand(-12,-3),
-      g:rand(.22,.36), s:rand(4,10), rot:rand(0,6), vr:rand(-.3,.3), col:colors[i%colors.length]});
+    for(let i=0;i<26;i++) P.push({type:'emoji', x:r.width/2, y:r.height*0.34,
+      vx:(Math.random()-.5)*7, vy:Math.random()*-9-2, g:.22+Math.random()*.1,
+      rot:Math.random()*6, vr:(Math.random()-.5)*.3, s:20+Math.random()*16});
+    for(let i=0;i<90;i++) P.push({type:'conf', x:r.width/2, y:r.height*0.34,
+      vx:(Math.random()-.5)*9, vy:Math.random()*-11-3, g:.26+Math.random()*.12,
+      rot:Math.random()*6, vr:(Math.random()-.5)*.35, s:4+Math.random()*6,
+      col:colors[i%colors.length]});
     let t = 0;
     (function frame(){
-      ctx.clearRect(0,0,c.width,c.height); t++;
-      P.forEach(p => { p.vy+=p.g; p.x+=p.vx; p.y+=p.vy; p.rot+=p.vr;
+      ctx.clearRect(0,0,cv.width,cv.height); t++;
+      P.forEach(p => {
+        p.vy += p.g; p.x += p.vx; p.y += p.vy; p.rot += p.vr;
         ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
-        ctx.fillStyle=p.col; ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s*0.62); ctx.restore(); });
-      if(t<140) requestAnimationFrame(frame); else ctx.clearRect(0,0,c.width,c.height);
+        if(p.type === 'emoji'){ ctx.font = p.s+'px serif'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(emoji,0,0); }
+        else { ctx.fillStyle = p.col; ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s*0.62); }
+        ctx.restore();
+      });
+      if(t < 150) requestAnimationFrame(frame); else ctx.clearRect(0,0,cv.width,cv.height);
     })();
   }
 
   // ---------------- 부팅 ----------------
-  startRound(true);
-  setTimeout(() => toast(`투니예요! 현재 <b>하나비 2위</b> — 1위까지 ${fmt(gapInfo(myPick).gap)} 남았어요 👀`, {dur:5000}), 900);
+  renderStrip();
+  renderSignatures();
 })();
 </script>
 </body>
