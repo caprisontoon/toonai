@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>TOONAI · AI 대화형 후원 프로토타입</title>
+<style>
+  :root{
+    --brand-700:#6D28D9; --brand-500:#8B5CF6; --brand-300:#C4B5FD;
+    --accent:#F472B6; --bg:#0F0B1E; --surface:#1B1430; --surface-2:#272042;
+    --user-bub:#7C3AED; --text:#F5F3FF; --text-dim:#A99FD0; --line:#332a52;
+    --radius:18px;
+    --font:"Pretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    margin:0; font-family:var(--font); color:var(--text);
+    background:
+      radial-gradient(1200px 700px at 15% -10%, #3b2270 0%, transparent 55%),
+      radial-gradient(1000px 700px at 110% 110%, #4c1d6e 0%, transparent 50%),
+      #0a0716;
+    display:flex; align-items:center; justify-content:center; min-height:100vh; padding:24px;
+  }
+  /* ---------- 휴대폰 목업 ---------- */
+  .stage{display:flex; flex-direction:column; align-items:center; gap:14px}
+  .tagline{color:var(--text-dim); font-size:13px; letter-spacing:.2px; text-align:center}
+  .tagline b{color:var(--brand-300)}
+  .phone{
+    position:relative; width:390px; height:min(844px,90vh);
+    background:var(--bg); border-radius:44px; overflow:hidden;
+    box-shadow:0 40px 90px rgba(0,0,0,.55), 0 0 0 11px #16111f, 0 0 0 12px #2a2440;
+    display:flex; flex-direction:column;
+  }
+  .notch{position:absolute; top:0; left:50%; transform:translateX(-50%); width:150px; height:30px;
+    background:#16111f; border-radius:0 0 18px 18px; z-index:30}
+  /* ---------- 헤더 ---------- */
+  header{
+    flex:0 0 auto; padding:46px 16px 12px; display:flex; align-items:center; gap:10px;
+    background:linear-gradient(180deg, rgba(109,40,217,.30), rgba(109,40,217,0));
+    border-bottom:1px solid var(--line); z-index:20;
+  }
+  .iconbtn{appearance:none; border:0; background:rgba(255,255,255,.06); color:var(--text);
+    width:34px; height:34px; border-radius:50%; font-size:16px; cursor:pointer; display:grid; place-items:center}
+  .iconbtn:active{transform:scale(.94)}
+  .h-title{flex:1; min-width:0}
+  .h-title .t1{font-weight:700; font-size:15px; display:flex; align-items:center; gap:6px}
+  .h-title .t2{font-size:11.5px; color:var(--text-dim)}
+  .dot-live{width:7px; height:7px; border-radius:50%; background:#34D399; box-shadow:0 0 8px #34D399}
+  .express{appearance:none; cursor:pointer; border:1px solid rgba(244,114,182,.5);
+    background:linear-gradient(135deg,rgba(244,114,182,.22),rgba(139,92,246,.22));
+    color:#fff; font-weight:700; font-size:12px; padding:8px 12px; border-radius:999px; white-space:nowrap}
+  .express:active{transform:scale(.96)}
+  /* ---------- 채팅 스레드 ---------- */
+  .thread{flex:1 1 auto; overflow-y:auto; padding:16px 14px 8px; display:flex; flex-direction:column; gap:10px; scroll-behavior:smooth}
+  .thread::-webkit-scrollbar{width:0}
+  .row{display:flex; gap:8px; align-items:flex-end; max-width:100%; animation:rise .26s ease-out}
+  .row.bot{justify-content:flex-start}
+  .row.user{justify-content:flex-end}
+  @keyframes rise{from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none}}
+  .avatar{flex:0 0 auto; width:30px; height:30px; border-radius:50%;
+    background:linear-gradient(135deg,var(--brand-500),var(--accent)); display:grid; place-items:center; font-size:16px;
+    box-shadow:0 4px 12px rgba(139,92,246,.5)}
+  .bubble{padding:10px 14px; border-radius:var(--radius); font-size:15px; line-height:1.5; max-width:78%; word-break:break-word}
+  .bot .bubble{background:var(--surface); border:1px solid var(--line); border-bottom-left-radius:6px}
+  .user .bubble{background:var(--user-bub); color:#fff; border-bottom-right-radius:6px;
+    box-shadow:0 6px 16px rgba(124,58,237,.35)}
+  .bubble b{color:var(--brand-300)} .user .bubble b{color:#fff}
+  /* 타이핑 인디케이터 */
+  .typing{display:flex; gap:4px; padding:14px}
+  .typing span{width:7px; height:7px; border-radius:50%; background:var(--text-dim); animation:bnc 1s infinite}
+  .typing span:nth-child(2){animation-delay:.15s} .typing span:nth-child(3){animation-delay:.3s}
+  @keyframes bnc{0%,60%,100%{transform:translateY(0); opacity:.4} 30%{transform:translateY(-5px); opacity:1}}
+  /* ---------- 퀵리플라이 칩 ---------- */
+  .controls{display:flex; flex-wrap:wrap; gap:8px; padding:2px 0 6px 38px; animation:rise .26s ease-out}
+  .chip{appearance:none; cursor:pointer; border:1px solid rgba(196,181,253,.4); background:var(--surface-2);
+    color:var(--text); font-size:13.5px; font-weight:600; padding:9px 14px; border-radius:999px; transition:.12s}
+  .chip:hover{border-color:var(--brand-300); background:#2f2752}
+  .chip:active{transform:scale(.96)}
+  .chip.primary{background:linear-gradient(135deg,var(--brand-500),var(--brand-700)); border-color:transparent;
+    box-shadow:0 6px 16px rgba(124,58,237,.4)}
+  /* ---------- 인라인 카드(말풍선 안) ---------- */
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+    border-bottom-left-radius:6px; padding:13px; max-width:84%; box-shadow:0 8px 24px rgba(0,0,0,.35)}
+  .card .ctitle{font-size:12px; color:var(--text-dim); margin-bottom:9px; display:flex; align-items:center; gap:6px}
+  /* 금액 카드 */
+  .amounts{display:grid; grid-template-columns:repeat(2,1fr); gap:8px}
+  .amt{position:relative; cursor:pointer; border:1px solid var(--line); background:var(--surface-2);
+    border-radius:12px; padding:12px 8px; text-align:center; font-weight:700; font-size:16px; transition:.12s}
+  .amt:hover{border-color:var(--brand-300)} .amt:active{transform:scale(.97)}
+  .amt.pop{border-color:var(--brand-500); box-shadow:0 0 0 2px rgba(139,92,246,.35), 0 0 18px rgba(139,92,246,.3)}
+  .amt .badge{position:absolute; top:-9px; right:8px; font-size:10px; font-weight:700; color:#fff;
+    background:linear-gradient(135deg,var(--accent),var(--brand-500)); padding:2px 7px; border-radius:999px}
+  .amt.custom{font-size:13px; color:var(--text-dim)}
+  .hint{margin-top:10px; font-size:11.5px; color:var(--text-dim); line-height:1.45}
+  /* 효과 라이브 미리보기 */
+  .preview{background:linear-gradient(160deg,#120e22,#1c1536); border:1px dashed rgba(196,181,253,.4);
+    border-radius:12px; padding:14px; overflow:hidden; position:relative}
+  .pv-label{position:absolute; top:7px; right:10px; font-size:10px; color:var(--text-dim)}
+  .alert{display:flex; align-items:center; gap:10px; animation:pop .5s cubic-bezier(.18,1.3,.4,1)}
+  @keyframes pop{from{opacity:0; transform:scale(.6) translateY(8px)} to{opacity:1; transform:none}}
+  .alert .ico{font-size:26px; animation:wig 1.4s ease-in-out infinite}
+  @keyframes wig{0%,100%{transform:rotate(-8deg) scale(1)} 50%{transform:rotate(8deg) scale(1.12)}}
+  .alert .meta .who{font-weight:800; font-size:14px; color:#fff}
+  .alert .meta .who span{color:var(--accent)}
+  .alert .meta .msg{font-size:12px; color:var(--text-dim); margin-top:2px}
+  .sparkle{position:absolute; font-size:13px; animation:fall 1.6s linear infinite; opacity:.9}
+  @keyframes fall{0%{transform:translateY(-12px) rotate(0); opacity:0} 20%{opacity:1} 100%{transform:translateY(70px) rotate(220deg); opacity:0}}
+  /* 메시지 초안 카드 */
+  .draft{cursor:pointer; border:1px solid var(--line); background:var(--surface-2); border-radius:12px;
+    padding:11px 12px; margin-bottom:8px; transition:.12s}
+  .draft:hover{border-color:var(--brand-300); background:#2f2752} .draft:active{transform:scale(.99)}
+  .draft .tone{display:inline-block; font-size:10.5px; font-weight:700; color:var(--brand-300);
+    background:rgba(139,92,246,.16); padding:2px 8px; border-radius:999px; margin-bottom:6px}
+  .draft .txt{font-size:14px; line-height:1.5}
+  /* 요약 카드 */
+  .sumrow{display:flex; justify-content:space-between; gap:10px; padding:7px 0; border-bottom:1px solid var(--line); font-size:13.5px}
+  .sumrow:last-of-type{border-bottom:0}
+  .sumrow .k{color:var(--text-dim)} .sumrow .v{font-weight:700; text-align:right; max-width:62%}
+  .sendbtn{margin-top:12px; width:100%; appearance:none; border:0; cursor:pointer; color:#fff; font-weight:800; font-size:15px;
+    padding:14px; border-radius:14px; background:linear-gradient(135deg,var(--brand-500),var(--accent));
+    box-shadow:0 10px 24px rgba(139,92,246,.45)}
+  .sendbtn:active{transform:scale(.98)}
+  /* 완료 */
+  .done{text-align:center; padding:6px 2px}
+  .done .check{width:62px; height:62px; margin:0 auto 8px; border-radius:50%;
+    background:linear-gradient(135deg,#34D399,#10b981); display:grid; place-items:center; font-size:32px;
+    box-shadow:0 10px 26px rgba(16,185,129,.5); animation:pop .5s cubic-bezier(.18,1.3,.4,1)}
+  .done h3{margin:4px 0 4px; font-size:17px} .done p{margin:0; font-size:13px; color:var(--text-dim); line-height:1.5}
+  /* ---------- 입력바 ---------- */
+  .composer{flex:0 0 auto; padding:10px 12px 16px; border-top:1px solid var(--line);
+    display:flex; align-items:center; gap:9px; background:rgba(15,11,30,.85); backdrop-filter:blur(8px)}
+  .composer .plus{flex:0 0 auto; width:36px; height:36px; border-radius:50%; border:1px solid var(--line);
+    background:var(--surface-2); color:var(--text-dim); font-size:20px; cursor:pointer}
+  .composer input{flex:1; background:var(--surface-2); border:1px solid var(--line); color:var(--text);
+    border-radius:999px; padding:11px 16px; font-size:14px; font-family:var(--font); outline:none}
+  .composer input:focus{border-color:var(--brand-300)}
+  .composer .send{flex:0 0 auto; width:40px; height:40px; border-radius:50%; border:0; cursor:pointer; color:#fff; font-size:18px;
+    background:linear-gradient(135deg,var(--brand-500),var(--brand-700)); display:grid; place-items:center}
+  .composer .send:active{transform:scale(.94)}
+  /* 컨페티 캔버스 */
+  #fx{position:absolute; inset:0; pointer-events:none; z-index:40}
+  /* 반응형: 모바일 = 전체화면 */
+  @media (max-width:460px){
+    body{padding:0}
+    .tagline{display:none}
+    .phone{width:100vw; height:100vh; border-radius:0; box-shadow:none}
+    .notch{display:none} header{padding-top:max(16px,env(safe-area-inset-top))}
+    .composer{padding-bottom:max(16px,env(safe-area-inset-bottom))}
+  }
+</style>
+</head>
+<body>
+  <div class="stage">
+    <div class="tagline">TOONAI · <b>AI 후원 도우미 '투니'</b> 프로토타입 &nbsp;—&nbsp; 칩을 눌러 후원을 진행해 보세요</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <header>
+        <button class="iconbtn" id="back" title="처음으로">‹</button>
+        <div class="h-title">
+          <div class="t1">🤖 투니 <span style="color:var(--text-dim);font-weight:500">·</span> 하나비에게 후원</div>
+          <div class="t2"><span class="dot-live" style="display:inline-block;vertical-align:middle;margin-right:5px"></span>방송 중 · 구독자 10만 달성 🎉</div>
+        </div>
+        <button class="express" id="express">⚡ 바로 후원</button>
+      </header>
+      <div class="thread" id="thread"></div>
+      <div class="composer">
+        <button class="plus" title="첨부">＋</button>
+        <input id="input" placeholder="메시지를 입력하거나 칩을 눌러보세요" autocomplete="off" />
+        <button class="send" id="send" title="보내기">↑</button>
+      </div>
+      <canvas id="fx"></canvas>
+    </div>
+  </div>
+
+<script>
+(function(){
+  "use strict";
+  const $ = s => document.querySelector(s);
+  const thread = $("#thread"), input = $("#input");
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  function scroll(){ thread.scrollTop = thread.scrollHeight; }
+
+  // ---------- 상태 ----------
+  let state = {};
+  let awaitingInput = null; // 한 번만 동작하는 입력 콜백
+  function reset(){
+    state = { recipient:'하나비', context:'구독자 10만 달성', intent:null,
+              amount:null, effect:null, message:null, pay:'카카오페이' };
+    awaitingInput = null; thread.innerHTML = ''; clearFx();
+  }
+
+  // ---------- 렌더 헬퍼 ----------
+  function botBubble(html){
+    const row = document.createElement('div'); row.className = 'row bot';
+    row.innerHTML = `<div class="avatar">🤖</div><div class="bubble">${html}</div>`;
+    thread.appendChild(row); scroll(); return row;
+  }
+  function botCard(inner){
+    const row = document.createElement('div'); row.className = 'row bot';
+    row.innerHTML = `<div class="avatar">🤖</div><div class="card">${inner}</div>`;
+    thread.appendChild(row); scroll(); return row;
+  }
+  function userBubble(text){
+    const row = document.createElement('div'); row.className = 'row user';
+    row.innerHTML = `<div class="bubble">${text}</div>`;
+    thread.appendChild(row); scroll();
+  }
+  async function typing(ms){
+    const row = document.createElement('div'); row.className = 'row bot';
+    row.innerHTML = `<div class="avatar">🤖</div><div class="bubble typing"><span></span><span></span><span></span></div>`;
+    thread.appendChild(row); scroll(); await sleep(ms == null ? 650 : ms); row.remove();
+  }
+  async function say(html, ms){ await typing(ms); return botBubble(html); }
+  async function card(inner, ms){ await typing(ms); return botCard(inner); }
+
+  function clearControls(){ thread.querySelectorAll('.controls').forEach(n => n.remove()); }
+  function chips(items){
+    clearControls();
+    const row = document.createElement('div'); row.className = 'controls';
+    items.forEach(it => {
+      const b = document.createElement('button');
+      b.className = 'chip' + (it.primary ? ' primary' : '');
+      b.innerHTML = it.label;
+      b.onclick = () => { row.remove(); if(it.echo !== false) userBubble(it.userText || it.label); it.onClick(); };
+      row.appendChild(b);
+    });
+    thread.appendChild(row); scroll();
+  }
+  function setComposer(enabled, ph){
+    input.placeholder = ph || (enabled ? '메시지를 입력해 주세요' : '메시지를 입력하거나 칩을 눌러보세요');
+    if(enabled){ input.focus(); }
+  }
+  function promptInput(ph, cb){ awaitingInput = cb; setComposer(true, ph); }
+
+  // ---------- 콘텐츠 데이터 (의도별) ----------
+  const INTENTS = {
+    congrats:{ name:'축하', emoji:'🎉',
+      effect:{name:'불꽃놀이', emoji:'🎆'}, altEffect:{name:'색종이 팡파레', emoji:'🎊'},
+      drafts:[
+        {tone:'감동', t:'하나비님 10만 축하해요! 늘 곁에서 응원할게요 💜'},
+        {tone:'유쾌', t:'10만이라니!! 이제 우리 하나비 셀럽 됐다 🎉🎉'},
+        {tone:'담백', t:'10만 축하합니다. 앞으로도 화이팅!'} ],
+      alt:[
+        {tone:'감성', t:'여기까지 오느라 고생 많았어요. 10만의 시작, 함께할게요 ✨'},
+        {tone:'레전드', t:'역사적인 날! 10만의 전설, 제가 증인입니다 🏆'} ] },
+    cheer:{ name:'응원', emoji:'💪',
+      effect:{name:'반짝이 하트', emoji:'💜'}, altEffect:{name:'응원봉 물결', emoji:'🤍'},
+      drafts:[
+        {tone:'감동', t:'오늘도 고생 많았어요. 하나비님 덕분에 하루가 즐거워요 💜'},
+        {tone:'유쾌', t:'하나비 파이팅!! 오늘 텐션 진짜 최고였다 🔥'},
+        {tone:'담백', t:'응원합니다. 늘 잘 보고 있어요!'} ],
+      alt:[
+        {tone:'든든', t:'힘든 날도 있겠지만 저희가 뒤에 있어요. 천천히 가요 🙌'},
+        {tone:'열정', t:'가즈아!! 하나비 폼 미쳤다 오늘도 1등 🚀'} ] },
+    thanks:{ name:'감사', emoji:'😂',
+      effect:{name:'박수갈채', emoji:'👏'}, altEffect:{name:'폭소 버블', emoji:'😂'},
+      drafts:[
+        {tone:'감동', t:'매번 웃게 해줘서 고마워요. 하나비님은 제 비타민이에요 😊'},
+        {tone:'유쾌', t:'아 진짜 웃겨서 죽는 줄ㅋㅋ 고마워요 하나비!! 😂'},
+        {tone:'담백', t:'재밌는 방송 고맙습니다. 잘 보고 갈게요!'} ],
+      alt:[
+        {tone:'잔잔', t:'덕분에 오늘 하루 잘 버텼어요. 고마워요, 진심 💛'},
+        {tone:'드립', t:'세금으로 내야 할 웃음값 후원으로 대신합니다 ㅋㅋ'} ] }
+  };
+  const fmt = n => '₩' + n.toLocaleString('ko-KR');
+
+  // ====================================================================
+  //  대화 플로우 (State Machine)
+  // ====================================================================
+  async function S0(){
+    await say(`안녕하세요! 후원 도우미 <b>투니</b>예요 😊`, 500);
+    await say(`오늘은 <b>${state.recipient}</b> 스트리머에게 마음을 전하러 오셨네요.<br>어떤 마음을 전하고 싶으세요?`);
+    chips([
+      {label:'🎉 축하해요', onClick:()=>pickIntent('congrats')},
+      {label:'💪 응원해요', onClick:()=>pickIntent('cheer')},
+      {label:'😂 고마워요', onClick:()=>pickIntent('thanks')},
+      {label:'✍️ 직접 쓸래요', onClick:customFirst},
+    ]);
+  }
+
+  function pickIntent(key){
+    state.intent = key;
+    if(key === 'congrats') return confirmContext();
+    return amountStep();
+  }
+
+  async function confirmContext(){
+    await say(`좋아요, <b>축하</b>의 마음이군요 🎉<br>혹시 오늘 ${state.recipient}님 <b>'${state.context}'</b> 축하하시는 거 맞죠?`);
+    chips([
+      {label:'맞아요', primary:true, onClick:amountStep},
+      {label:'다른 일이에요', onClick:()=>{ state.context='특별한 날'; amountStep(); }},
+    ]);
+  }
+
+  // -------- S2 금액 --------
+  async function amountStep(express){
+    const lead = express
+      ? `바로 보내드릴게요! 금액만 골라주세요 ⚡`
+      : `${INTENTS[state.intent].name}에 딱 맞는 금액을 추천해드릴게요. 부담 없이 골라보세요 👇`;
+    await say(lead);
+    const opts = [1000,5000,10000,50000];
+    const cells = opts.map(v => {
+      const pop = v===10000 ? ' pop' : '';
+      const badge = v===10000 ? `<span class="badge">인기</span>` : '';
+      return `<div class="amt${pop}" data-v="${v}">${badge}${fmt(v)}</div>`;
+    }).join('');
+    const node = await card(`
+      <div class="ctitle">💰 후원 금액 선택</div>
+      <div class="amounts">${cells}<div class="amt custom" data-v="custom">✏️ 직접 입력</div></div>
+      <div class="hint">${fmt(10000)}부터 <b>불꽃놀이</b> 같은 특별 효과를 사용할 수 있어요!</div>
+    `);
+    node.querySelectorAll('.amt').forEach(a => a.onclick = () => {
+      const v = a.dataset.v;
+      node.querySelector('.card').style.opacity = .6;
+      node.querySelectorAll('.amt').forEach(x => x.style.pointerEvents='none');
+      if(v === 'custom'){
+        promptInput('금액을 숫자로 입력 (예: 30000)', (txt) => {
+          const num = parseInt(String(txt).replace(/[^0-9]/g,''),10) || 5000;
+          state.amount = num; afterAmount(express, true);
+        });
+      } else {
+        state.amount = parseInt(v,10); userBubble(fmt(state.amount)); afterAmount(express);
+      }
+    });
+  }
+  function afterAmount(express, custom){
+    if(express) return summaryStep();
+    if(custom && state.amount < 10000){
+      // 효과 잠금 안내(1회, 비강압)
+      const add = 10000 - state.amount;
+      say(`좋아요, ${fmt(state.amount)} 접수! 참고로 <b>+${fmt(add)}</b> 하면 특별 효과도 쓸 수 있어요 ✨`)
+        .then(() => chips([
+          {label:`${fmt(10000)}로 올릴래요`, primary:true, onClick:()=>{ state.amount=10000; effectStep(); }},
+          {label:'지금 금액 그대로', onClick:effectStep},
+        ]));
+      return;
+    }
+    effectStep();
+  }
+
+  // -------- S3 효과 + 라이브 미리보기 --------
+  async function effectStep(){
+    const ef = INTENTS[state.intent].effect;
+    state.effect = ef;
+    await say(`${fmt(state.amount)} 좋아요! 이 금액이면 화면에 <b>${ef.name} ${ef.emoji}</b>가 함께 터져요.<br>방송에 어떻게 뜨는지 미리 볼까요?`);
+    showPreview(ef);
+    chips([
+      {label:'이 효과 좋아요', primary:true, onClick:proceedAfterEffect},
+      {label:'다른 효과 볼래요', onClick:altEffect},
+    ]);
+  }
+  async function altEffect(){
+    const ef = INTENTS[state.intent].altEffect;
+    state.effect = ef;
+    await say(`그럼 이건 어때요? <b>${ef.name} ${ef.emoji}</b> ✨`);
+    showPreview(ef);
+    chips([
+      {label:'이게 더 좋아요', primary:true, onClick:proceedAfterEffect},
+      {label:'처음 효과로 할래요', onClick:()=>{ state.effect=INTENTS[state.intent].effect; userBubble('처음 효과로 할래요'); proceedAfterEffect(); }},
+    ]);
+  }
+  function showPreview(ef){
+    const sparks = ['✨','💜','⭐','🎀','💫'].map((s,i)=>
+      `<span class="sparkle" style="left:${10+i*20}%; animation-delay:${i*0.25}s">${s}</span>`).join('');
+    botCard(`
+      <div class="ctitle">📺 라이브 미리보기 (방송 화면)</div>
+      <div class="preview">${sparks}
+        <span class="pv-label">방송 오버레이</span>
+        <div class="alert">
+          <div class="ico">${ef.emoji}</div>
+          <div class="meta">
+            <div class="who"><span>나</span>님이 ${fmt(state.amount)} 후원!</div>
+            <div class="msg">${ef.name} 효과와 함께 메시지가 표시돼요</div>
+          </div>
+        </div>
+      </div>`);
+  }
+  function proceedAfterEffect(){ return state.message ? summaryStep() : messageStep(false); }
+
+  // -------- S4 AI 메시지 초안 --------
+  async function messageStep(isAlt){
+    const data = INTENTS[state.intent];
+    const list = isAlt ? data.alt : data.drafts;
+    if(!isAlt) await say(`이제 메시지만 남았어요! ${data.name} 메시지를 준비했어요.<br>마음에 드는 걸 고르거나 살짝 고쳐도 돼요 ✍️`);
+    else await say(`다른 느낌으로도 준비해봤어요. 어떤가요? ✨`);
+    const node = await card(`
+      <div class="ctitle">💬 AI 추천 메시지 ${isAlt ? '(다른 버전)' : ''}</div>
+      ${list.map((d,i)=>`<div class="draft" data-i="${i}"><span class="tone">${d.tone}</span><div class="txt">${esc(d.t)}</div></div>`).join('')}
+    `);
+    node.querySelectorAll('.draft').forEach(d => d.onclick = () => {
+      const msg = list[parseInt(d.dataset.i,10)].t;
+      state.message = msg; clearControls(); userBubble(esc(msg)); summaryStep();
+    });
+    chips([
+      {label:'✍️ 직접 쓸래요', onClick:()=>{
+        promptInput('전하고 싶은 메시지를 입력하세요', (txt)=>{ state.message = txt; summaryStep(); });
+      }},
+      {label:'🔄 더 추천해줘', echo:false, onClick:()=>messageStep(true)},
+    ]);
+  }
+
+  // -------- S5 요약 --------
+  async function summaryStep(){
+    awaitingInput = null; setComposer(false);
+    if(!state.intent) state.intent = 'cheer';
+    if(!state.effect && state.amount >= 10000) state.effect = INTENTS[state.intent].effect;
+    if(!state.message) state.message = '늘 응원할게요! 🙌';
+    await say(`완벽해요 💜 마지막으로 확인해주세요!`);
+    const efTxt = state.effect ? `${state.effect.name} ${state.effect.emoji}` : '효과 없음';
+    const node = await card(`
+      <div class="ctitle">🧾 후원 요약</div>
+      <div class="sumrow"><span class="k">받는 분</span><span class="v">${esc(state.recipient)}</span></div>
+      <div class="sumrow"><span class="k">금액</span><span class="v">${fmt(state.amount||5000)}</span></div>
+      <div class="sumrow"><span class="k">효과</span><span class="v">${efTxt}</span></div>
+      <div class="sumrow"><span class="k">메시지</span><span class="v">"${esc(state.message)}"</span></div>
+      <div class="sumrow"><span class="k">결제수단</span><span class="v">${state.pay} ⚡</span></div>
+      <button class="sendbtn" id="dosend">후원 보내기 · ${fmt(state.amount||5000)}</button>
+    `);
+    node.querySelector('#dosend').onclick = payStep;
+  }
+
+  // -------- S6 결제 → S7 완료 --------
+  async function payStep(){
+    clearControls();
+    userBubble('후원 보내기');
+    await say(`${state.pay}로 결제 중이에요… ⚡`, 400);
+    await typing(700);
+    confetti();
+    botCard(`
+      <div class="done">
+        <div class="check">✓</div>
+        <h3>후원 완료! 🎉</h3>
+        <p>방금 <b>${esc(state.recipient)}</b>님 화면에<br>${state.effect ? state.effect.name+' '+state.effect.emoji+'가 터졌어요!' : '알림이 떴어요!'}<br>따뜻한 마음 잘 전달됐어요 💜</p>
+      </div>
+    `);
+    await sleep(400);
+    await say(`${state.recipient}님이 곧 닉네임을 불러줄 거예요. 채팅창도 한번 보세요!`);
+    chips([
+      {label:'💜 한 번 더 후원', primary:true, echo:false, onClick:()=>{
+        const r = state.recipient; reset(); state.recipient = r; userBubble('한 번 더 후원할게요'); S0();
+      }},
+      {label:'🔔 알림 받기', onClick:()=>say('알림 설정 완료! ' + state.recipient + '님 방송 시작하면 알려드릴게요 🔔').then(()=>endChips())},
+      {label:'완료', echo:false, onClick:()=>say('오늘도 마음 전해줘서 고마워요 😊').then(()=>endChips())},
+    ]);
+  }
+  function endChips(){
+    chips([{label:'↻ 처음부터 다시 체험', echo:false, primary:true, onClick:start}]);
+  }
+
+  // -------- 익스프레스 / 자유입력 --------
+  async function express(){
+    clearControls(); awaitingInput = null; setComposer(false);
+    userBubble('⚡ 바로 후원할게요');
+    if(!state.intent) state.intent = 'cheer';
+    state.message = state.message || '늘 응원해요! 🙌';
+    await say(`바로 도와드릴게요! 단골 후원으로 빠르게 보낼 수 있어요 ⚡`, 400);
+    amountStep(true);
+  }
+  function customFirst(){
+    promptInput('전하고 싶은 메시지를 자유롭게 적어주세요', async (txt)=>{
+      state.message = txt; state.intent = state.intent || 'cheer';
+      await say(`좋은 메시지예요! 그럼 금액을 골라볼까요? ✨`);
+      amountStep();
+    });
+  }
+  function send(){
+    const v = input.value.trim(); if(!v) return; input.value = '';
+    if(awaitingInput){ const cb = awaitingInput; awaitingInput = null; setComposer(false); userBubble(esc(v)); cb(v); return; }
+    // 유휴 상태 자유 입력 → 메시지로 받아 진행 (AI가 알아듣는 느낌)
+    clearControls(); userBubble(esc(v)); state.message = v; state.intent = state.intent || 'cheer';
+    say(`메시지 받았어요! 그럼 금액을 골라볼까요? ✨`).then(()=>amountStep());
+  }
+
+  // ---------- 컨페티 ----------
+  function clearFx(){ const c=$("#fx"); if(c){ const x=c.getContext('2d'); x&&x.clearRect(0,0,c.width,c.height);} }
+  function confetti(){
+    const c = $("#fx"), ctx = c.getContext('2d');
+    const r = c.getBoundingClientRect(); c.width = r.width; c.height = r.height;
+    const colors = ['#8B5CF6','#F472B6','#FBBF24','#34D399','#C4B5FD','#fff'];
+    const P = []; for(let i=0;i<150;i++){ P.push({
+      x:r.width/2, y:r.height*0.34, vx:(Math.random()-.5)*9, vy:Math.random()*-10-3,
+      g:0.24+Math.random()*0.12, s:4+Math.random()*6, rot:Math.random()*6, vr:(Math.random()-.5)*0.35,
+      col:colors[i%colors.length] }); }
+    let t = 0;
+    (function frame(){
+      ctx.clearRect(0,0,c.width,c.height); t++;
+      P.forEach(p=>{ p.vy+=p.g; p.x+=p.vx; p.y+=p.vy; p.rot+=p.vr;
+        ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot); ctx.fillStyle=p.col;
+        ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s*0.62); ctx.restore(); });
+      if(t<130) requestAnimationFrame(frame); else ctx.clearRect(0,0,c.width,c.height);
+    })();
+  }
+
+  // ---------- 부팅 ----------
+  function start(){ reset(); S0(); }
+  $("#send").onclick = send;
+  input.addEventListener('keydown', e => { if(e.key === 'Enter') send(); });
+  $("#express").onclick = express;
+  $("#back").onclick = start;
+  start();
+})();
+</script>
+</body>
+</html>
